@@ -32,25 +32,36 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}     # ← 內建 token，免設
 
+      # 1. ⭐ 新增這個步驟，把大寫轉小寫並存入環境變數
+      - name: Downcase REPO_OWNER
+        run: |
+          echo "REPO_OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      # 2. 修改原本的 Build and Push 步驟
       - name: Build and Push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
+          # 這裡改用剛才轉好的環境變數 env.REPO_OWNER_LOWER
           tags: |
-            ghcr.io/${{ github.repository_owner }}/devops-demo:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/devops-demo:latest
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-demo:${{ github.sha }}
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-demo:latest
+
+      # 3. 同理，下方的 Update Config Repo 內部的網址也要記得同步修正
       - name: Update Config Repo
         env:
           CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
-        run: |
+        
+  run: |
           if [ -z "$CONFIG_REPO_TOKEN" ]; then
             echo "::warning::CONFIG_REPO_TOKEN 未設，略過更新 Config Repo（image 已推上 GHCR）"
             exit 0
           fi
-          git clone https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/4-learn/devops-config.git
+          # 這裡的 clone 與 sed 替換路徑同步改用全小寫的變數
+          git clone https://x-access-token:${CONFIG_REPO_TOKEN}@github.com/${{ env.REPO_OWNER_LOWER }}/devops-config.git
           cd devops-config
-          sed -i "s|image: ghcr.io/.*/devops-demo:.*|image: ghcr.io/4-learn/devops-demo:${{ github.sha }}|" k8s/deployment.yaml
+          sed -i "s|image: ghcr.io/.*/devops-demo:.*|image: ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-demo:${{ github.sha }}|" k8s/deployment.yaml
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add k8s/deployment.yaml
