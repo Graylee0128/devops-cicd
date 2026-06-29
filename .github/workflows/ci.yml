@@ -45,8 +45,8 @@ jobs:
           push: true
           # 這裡改用剛才轉好的環境變數 env.REPO_OWNER_LOWER
           tags: |
-            ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-demo:${{ github.sha }}
-            ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-demo:latest
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-cicd:${{ github.sha }}
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/devops-cicd:latest
 
       # 3. 同理，下方的 Update Config Repo 內部的網址也要記得同步修正
       - name: Update Config Repo
