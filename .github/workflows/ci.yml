@@ -52,8 +52,8 @@ jobs:
       - name: Update Config Repo
         env:
           CONFIG_REPO_TOKEN: ${{ secrets.CONFIG_REPO_TOKEN }}
-        
-  run: |
+
+        run: |
           if [ -z "$CONFIG_REPO_TOKEN" ]; then
             echo "::warning::CONFIG_REPO_TOKEN 未設，略過更新 Config Repo（image 已推上 GHCR）"
             exit 0
